@@ -34,6 +34,7 @@ namespace TestServer
             app.UseRouting();
 
             app.UseAuthentication();  //<-- Important!
+            app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
             {

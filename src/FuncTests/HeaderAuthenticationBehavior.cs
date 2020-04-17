@@ -2,6 +2,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Security.Claims;
 using System.Text;
@@ -85,15 +86,14 @@ namespace FuncTests
 
             //Act
             var resp = await client.PostAsync("test/is-in-role", new StringContent("\"" + role + "\"", Encoding.UTF8, "application/json"));
+            var respStr = await resp.Content.ReadAsStringAsync();
 
             if (!resp.IsSuccessStatusCode)
             {
-                _output.WriteLine(await resp.Content.ReadAsStringAsync());
+                _output.WriteLine(respStr);
                 throw new Exception();
             }
-
-            var respStr = await resp.Content.ReadAsStringAsync();
-
+            
             _output.WriteLine($"HTTP code: {(int)resp.StatusCode}({resp.StatusCode})");
             _output.WriteLine(respStr);
 
@@ -114,14 +114,13 @@ namespace FuncTests
 
             //Act
             var resp = await client.GetAsync("test");
+            var respStr = await resp.Content.ReadAsStringAsync();
 
             if (!resp.IsSuccessStatusCode)
             {
-                _output.WriteLine(await resp.Content.ReadAsStringAsync());
+                _output.WriteLine(respStr);
                 throw new Exception();
             }
-
-            var respStr = await resp.Content.ReadAsStringAsync();
 
             _output.WriteLine($"HTTP code: {(int)resp.StatusCode}({resp.StatusCode})");
             _output.WriteLine(respStr);
@@ -131,6 +130,23 @@ namespace FuncTests
             //Assert
             Assert.True(resp.IsSuccessStatusCode);
             Assert.Equal("Растислав", claims["name"]);
+        }
+
+        [Fact]
+        public async Task ShouldReturn401AndDescWhenClaimsHasWrongFormatAndRequired()
+        {
+            //Arrange
+            var client = _factory.CreateClient();
+            client.DefaultRequestHeaders.Add(HeaderBasedDefinitions.UserIdHeaderName, UserId);
+            client.DefaultRequestHeaders.Add(HeaderBasedDefinitions.UserClaimsHeaderName, "Wrong claims");
+
+            //Act
+            var resp = await client.GetAsync("test/authorized");
+            var respStr = await resp.Content.ReadAsStringAsync();
+            
+            //Assert
+            Assert.Equal(HttpStatusCode.Unauthorized, resp.StatusCode);
+            Assert.Equal("", respStr);
         }
     }
 }

@@ -8,6 +8,7 @@ using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using System.Web;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
@@ -28,8 +29,8 @@ namespace MyAuth.HeaderAuthentication
         protected override Task<AuthenticateResult> HandleAuthenticateAsync()
         {
             var userIdHeader = Request.Headers[HeaderBasedDefinitions.UserIdHeaderName];
-            if (userIdHeader == StringValues.Empty)
-                return Task.FromResult(AuthenticateResult.Fail($"Missing {HeaderBasedDefinitions.UserIdHeaderName} Header"));
+            if (string.IsNullOrWhiteSpace(userIdHeader))
+                return Task.FromResult(AuthenticateResult.NoResult());
 
             var claims = new List<Claim>
             {
@@ -52,7 +53,8 @@ namespace MyAuth.HeaderAuthentication
                 }
                 catch
                 {
-                    return Task.FromResult(AuthenticateResult.Fail($"Invalid {HeaderBasedDefinitions.UserClaimsHeaderName} Header"));
+                    var reason = $"Invalid {HeaderBasedDefinitions.UserClaimsHeaderName} Header";
+                    return Task.FromResult(AuthenticateResult.Fail(reason));
                 }
             }
 

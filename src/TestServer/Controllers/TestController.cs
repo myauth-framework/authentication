@@ -16,6 +16,13 @@ namespace TestServer.Controllers
             return Ok(Request.HttpContext.User.Claims.Select(c => new ClaimModel(c)).ToArray());
         }
 
+        [HttpGet("authorized")]
+        [Authorize]
+        public IActionResult GetAuthorized()
+        {
+            return Ok();
+        }
+
         [HttpPost("is-in-role")]
         public IActionResult IsInRole([FromBody]string role)
         {
