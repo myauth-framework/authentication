@@ -9,8 +9,9 @@
     <RepositoryUrl>https://github.com/ozzy-ext-myauth/header-authentication.git</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <Description>Integrates header based authentication. ASP.NET Core 3.1+</Description>
-    <AssemblyVersion>1.0.0.1604</AssemblyVersion>
-    <FileVersion>1.0.0.1604</FileVersion>
+    <AssemblyVersion>1.0.1.1704</AssemblyVersion>
+    <FileVersion>1.0.1.1704</FileVersion>
+    <Version>1.0.1</Version>
   </PropertyGroup>
 
   <ItemGroup>
