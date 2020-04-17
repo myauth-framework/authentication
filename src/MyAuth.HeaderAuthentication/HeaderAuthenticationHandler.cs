@@ -6,6 +6,7 @@ using System.Security.Claims;
 using System.Text;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
+using System.Web;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -42,8 +43,12 @@ namespace MyAuth.HeaderAuthentication
                 try
                 {
                     var claimsHeaderPayload = JwtPayload.Deserialize(claimsHeader);
-                    claims.AddRange(claimsHeaderPayload.Claims
-                        .Where(c => ClaimsBlackList.Claims.All(blc => blc != c.Type)));
+
+                    var decodedClaims = claimsHeaderPayload.Claims
+                        .Select(c =>new Claim(c.Type, HttpUtility.UrlDecode(c.Value), c.ValueType))
+                        .Where(c => ClaimsBlackList.Claims.All(blc => blc != c.Type));
+                        
+                    claims.AddRange(decodedClaims);
                 }
                 catch
                 {

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.ComponentModel.DataAnnotations;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
@@ -6,6 +6,7 @@ using System.Net.Http;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
+using System.Web;
 using Microsoft.AspNetCore.Mvc.Testing;
 using MyAuth.HeaderAuthentication;
 using Newtonsoft.Json;
@@ -24,6 +25,7 @@ namespace FuncTests
         {
             new Claim("Claim", "ClaimVal"),
             new Claim(ClaimTypes.Role, "Admin"),
+            new Claim("name", HttpUtility.UrlEncode("Растислав")),
         };
 
         private readonly WebApplicationFactory<Startup> _factory;
@@ -100,6 +102,35 @@ namespace FuncTests
             //Assert
             Assert.True(resp.IsSuccessStatusCode);
             Assert.Equal(isInRoleExpected, isInRole);
+        }
+
+        [Fact]
+        public async Task ShouldResolveUrlEncodedHeaders()
+        {
+            //Arrange
+            var client = _factory.CreateClient();
+            client.DefaultRequestHeaders.Add(HeaderBasedDefinitions.UserIdHeaderName, UserId);
+            client.DefaultRequestHeaders.Add(HeaderBasedDefinitions.UserClaimsHeaderName, new JwtPayload(UserClaims).SerializeToJson());
+
+            //Act
+            var resp = await client.GetAsync("test");
+
+            if (!resp.IsSuccessStatusCode)
+            {
+                _output.WriteLine(await resp.Content.ReadAsStringAsync());
+                throw new Exception();
+            }
+
+            var respStr = await resp.Content.ReadAsStringAsync();
+
+            _output.WriteLine($"HTTP code: {(int)resp.StatusCode}({resp.StatusCode})");
+            _output.WriteLine(respStr);
+
+            var claims = JsonConvert.DeserializeObject<ClaimModel[]>(respStr).ToDictionary(c => c.Type, c => c.Value);
+
+            //Assert
+            Assert.True(resp.IsSuccessStatusCode);
+            Assert.Equal("Растислав", claims["name"]);
         }
     }
 }
