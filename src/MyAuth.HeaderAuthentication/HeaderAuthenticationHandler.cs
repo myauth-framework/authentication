@@ -39,7 +39,7 @@ namespace MyAuth.HeaderAuthentication
             };
 
             var claimsHeader = Request.Headers[HeaderBasedDefinitions.UserClaimsHeaderName];
-            if (claimsHeader != StringValues.Empty)
+            if (!string.IsNullOrWhiteSpace(claimsHeader))
             {
                 try
                 {
