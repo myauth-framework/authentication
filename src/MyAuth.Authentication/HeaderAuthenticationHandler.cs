@@ -1,18 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
+using System.Net.Http.Headers;
 using System.Security.Claims;
-using System.Text;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using System.Web;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Microsoft.Extensions.Primitives;
 
-namespace MyAuth.HeaderAuthentication
+namespace MyAuth.Authentication
 {
     class HeaderAuthenticationHandler : AuthenticationHandler<AuthenticationSchemeOptions>
     {
@@ -27,32 +25,38 @@ namespace MyAuth.HeaderAuthentication
 
         protected override Task<AuthenticateResult> HandleAuthenticateAsync()
         {
-            var userIdHeader = Request.Headers[HeaderBasedDefinitions.UserIdHeaderName];
-            if (userIdHeader == StringValues.Empty)
-                return Task.FromResult(AuthenticateResult.Fail($"Missing {HeaderBasedDefinitions.UserIdHeaderName} Header"));
+            
+            var authHeader = Request.Headers["Authorization"];
+            if (!AuthenticationHeaderValue.TryParse(authHeader, out var authVal) ||
+                authVal.Scheme != HeaderBasedDefinitions.AuthenticationSchemeV1)
+                return Task.FromResult(AuthenticateResult.NoResult());
 
             var claims = new List<Claim>
             {
-                new Claim(ClaimTypes.NameIdentifier, userIdHeader),
-                new Claim(ClaimTypes.Name, userIdHeader)
+                new Claim(ClaimTypes.NameIdentifier, authVal.Parameter),
+                new Claim(ClaimTypes.Name, authVal.Parameter)
             };
 
             var claimsHeader = Request.Headers[HeaderBasedDefinitions.UserClaimsHeaderName];
-            if (claimsHeader != StringValues.Empty)
+            if (!string.IsNullOrWhiteSpace(claimsHeader))
             {
                 try
                 {
                     var claimsHeaderPayload = JwtPayload.Deserialize(claimsHeader);
 
                     var decodedClaims = claimsHeaderPayload.Claims
-                        .Select(c =>new Claim(c.Type, HttpUtility.UrlDecode(c.Value), c.ValueType))
+                        .Select(c => new Claim(
+                                NormalizeClaimType(c.Type), 
+                                HttpUtility.UrlDecode(c.Value), 
+                                c.ValueType))
                         .Where(c => ClaimsBlackList.Claims.All(blc => blc != c.Type));
                         
                     claims.AddRange(decodedClaims);
                 }
                 catch
                 {
-                    return Task.FromResult(AuthenticateResult.Fail($"Invalid {HeaderBasedDefinitions.UserClaimsHeaderName} Header"));
+                    var reason = $"Invalid {HeaderBasedDefinitions.UserClaimsHeaderName} Header";
+                    return Task.FromResult(AuthenticateResult.Fail(reason));
                 }
             }
 
@@ -61,6 +65,18 @@ namespace MyAuth.HeaderAuthentication
             var ticket = new AuthenticationTicket(principal, Scheme.Name);
 
             return Task.FromResult(AuthenticateResult.Success(ticket));
+        }
+
+        private string NormalizeClaimType(string claimType)
+        {
+            switch (claimType.ToLower())
+            {
+                case "role":
+                case "roles":
+                    return ClaimTypes.Role;
+                default:
+                    return claimType;
+            }
         }
     }
 }

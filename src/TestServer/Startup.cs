@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using MyAuth.HeaderAuthentication;
+using MyAuth.Authentication;
 
 namespace TestServer
 {
@@ -20,7 +20,7 @@ namespace TestServer
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllers();
-            services.AddHeaderAuthentication(); //<-- Important!
+            services.AddMyAuthAuthentication(); //<-- Important!
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -34,6 +34,7 @@ namespace TestServer
             app.UseRouting();
 
             app.UseAuthentication();  //<-- Important!
+            app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
             {

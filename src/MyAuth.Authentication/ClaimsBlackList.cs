@@ -1,4 +1,4 @@
-﻿namespace MyAuth.HeaderAuthentication
+﻿namespace MyAuth.Authentication
 {
     static class ClaimsBlackList
     {

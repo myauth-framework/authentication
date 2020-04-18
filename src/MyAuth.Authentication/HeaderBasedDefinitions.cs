@@ -1,13 +1,12 @@
-﻿namespace MyAuth.HeaderAuthentication
+﻿namespace MyAuth.Authentication
 {
     /// <summary>
     /// Contains constant definitions
     /// </summary>
     public class HeaderBasedDefinitions
     {
-        public const string AuthenticationScheme = "Header";
+        public const string AuthenticationSchemeV1 = "MyAuth1";
 
-        public const string UserIdHeaderName = "X-User-Id";
         public const string UserClaimsHeaderName = "X-User-Claims";
     }
 }
