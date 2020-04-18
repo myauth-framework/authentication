@@ -45,7 +45,10 @@ namespace MyAuth.Authentication
                     var claimsHeaderPayload = JwtPayload.Deserialize(claimsHeader);
 
                     var decodedClaims = claimsHeaderPayload.Claims
-                        .Select(c =>new Claim(c.Type, HttpUtility.UrlDecode(c.Value), c.ValueType))
+                        .Select(c => new Claim(
+                                NormalizeClaimType(c.Type), 
+                                HttpUtility.UrlDecode(c.Value), 
+                                c.ValueType))
                         .Where(c => ClaimsBlackList.Claims.All(blc => blc != c.Type));
                         
                     claims.AddRange(decodedClaims);
@@ -62,6 +65,18 @@ namespace MyAuth.Authentication
             var ticket = new AuthenticationTicket(principal, Scheme.Name);
 
             return Task.FromResult(AuthenticateResult.Success(ticket));
+        }
+
+        private string NormalizeClaimType(string claimType)
+        {
+            switch (claimType.ToLower())
+            {
+                case "role":
+                case "roles":
+                    return ClaimTypes.Role;
+                default:
+                    return claimType;
+            }
         }
     }
 }

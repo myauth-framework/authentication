@@ -23,12 +23,15 @@ namespace FuncTests
     public class HeaderAuthenticationBehavior : IClassFixture<WebApplicationFactory<Startup>>
     {
         private const string UserId = "2bbddfc6a668492ebac555a28e7381e1";
-        private static readonly Claim[] UserClaims = new Claim[]
-        {
-            new Claim("Claim", "ClaimVal"),
-            new Claim(ClaimTypes.Role, "Admin"),
-            new Claim("name", HttpUtility.UrlEncode("Растислав")),
-        };
+        //private static readonly Claim[] UserClaims = new Claim[]
+        //{
+        //    new Claim("Claim", "ClaimVal"),
+        //    new Claim(ClaimTypes.Role, "Admin"),
+        //    new Claim(ClaimTypes.Role, "SimpleUser"),
+        //    new Claim("Roles", "Admin2"),
+        //    new Claim("Roles", "Admin2"),
+        //    new Claim("name", HttpUtility.UrlEncode("Растислав")),
+        //};
 
         private readonly WebApplicationFactory<Startup> _factory;
         private readonly ITestOutputHelper _output;
@@ -47,7 +50,15 @@ namespace FuncTests
             var client = _factory.CreateClient();
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(
                 HeaderBasedDefinitions.AuthenticationSchemeV1, UserId);
-            client.DefaultRequestHeaders.Add(HeaderBasedDefinitions.UserClaimsHeaderName, new JwtPayload(UserClaims).SerializeToJson());
+
+            Claim[] userClaims = 
+            {
+                new Claim("Claim", "ClaimVal")
+            };
+
+        client.DefaultRequestHeaders.Add(
+            HeaderBasedDefinitions.UserClaimsHeaderName, 
+            new JwtPayload(userClaims).SerializeToJson());
 
             //Act
             var resp = await client.GetAsync("test");
@@ -68,8 +79,7 @@ namespace FuncTests
             //Assert
             Assert.True(resp.IsSuccessStatusCode);
             Assert.Equal("ClaimVal", claims["Claim"]);
-            Assert.Equal("Admin", claims["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"]);
-            Assert.Equal("2bbddfc6a668492ebac555a28e7381e1", claims["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"]);
+            Assert.Equal("2bbddfc6a668492ebac555a28e7381e1", claims[ClaimTypes.NameIdentifier]);
             Assert.DoesNotContain("nbf", claims.Keys);
             Assert.DoesNotContain("exp", claims.Keys);
             Assert.DoesNotContain("iss", claims.Keys);
@@ -77,15 +87,27 @@ namespace FuncTests
         }
 
         [Theory]
-        [InlineData("Should be Admin", "Admin", true)]
-        [InlineData("Should not be Emploiyee", "Employee", false)]
-        public async Task ShouldPassRoles(string desc, string role, bool isInRoleExpected)
+        [InlineData("Roles-user", true)]
+        [InlineData("Role-user", true)]
+        [InlineData("ClaimTypes-user", true)]
+        [InlineData("Wrong-user", false)]
+        public async Task ShouldPassRoles(string role, bool isInRoleExpected)
         {
             //Arrange
             var client = _factory.CreateClient();
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(
                 HeaderBasedDefinitions.AuthenticationSchemeV1, UserId);
-            client.DefaultRequestHeaders.Add(HeaderBasedDefinitions.UserClaimsHeaderName, new JwtPayload(UserClaims).SerializeToJson());
+
+            Claim[] userClaims =
+            {
+                new Claim("Roles", "Roles-user"),
+                new Claim("Role", "Role-user"),
+                new Claim(ClaimTypes.Role, "ClaimTypes-user")
+            };
+
+            client.DefaultRequestHeaders.Add(
+                HeaderBasedDefinitions.UserClaimsHeaderName, 
+                new JwtPayload(userClaims).SerializeToJson());
 
             //Act
             var resp = await client.PostAsync("test/is-in-role", new StringContent("\"" + role + "\"", Encoding.UTF8, "application/json"));
@@ -114,7 +136,15 @@ namespace FuncTests
             var client = _factory.CreateClient();
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(
                 HeaderBasedDefinitions.AuthenticationSchemeV1, UserId);
-            client.DefaultRequestHeaders.Add(HeaderBasedDefinitions.UserClaimsHeaderName, new JwtPayload(UserClaims).SerializeToJson());
+
+            Claim[] userClaims =
+            {
+                new Claim("name", HttpUtility.UrlEncode("Растислав"))
+            };
+
+            client.DefaultRequestHeaders.Add(
+                HeaderBasedDefinitions.UserClaimsHeaderName, 
+                new JwtPayload(userClaims).SerializeToJson());
 
             //Act
             var resp = await client.GetAsync("test");
