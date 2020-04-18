@@ -9,7 +9,7 @@ namespace MyAuth.Authentication
     /// </summary>
     public static class HeaderAuthenticationIntegration
     {
-        public static IServiceCollection AddHeaderAuthentication(this IServiceCollection services)
+        public static IServiceCollection AddMyAuthAuthentication(this IServiceCollection services)
         {
             services.AddAuthentication(HeaderBasedDefinitions.AuthenticationSchemeV1)
                 .AddScheme<AuthenticationSchemeOptions, HeaderAuthenticationHandler>(

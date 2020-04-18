@@ -1,20 +1,58 @@
-# MyAuth.HeaderAuthentication
+# MyAuth.Authentication
 
 ## Обзор
 
-Библиотека, содержащая инструменты для Аутентификации по заголовкам. 
+Библиотека, содержащая инструменты для аутентификации по идентификатру пользователя. 
 
 Для платформ .NET Core 3.1+
 
-### Заголовки аутентификации
+### Аутентификация
 
+Аутентификационные данные передаются стандартным способом - в заголовке `Authorization`. Схема аутентификации - `MyAuth1`. В качестве параметров аутентификации предаётся идентификатор пользователя в открытом виде. 
 
+Пример заголовка:
 
-### Время жизни сервиса
+```
+Authorization: MyAuth1 de184f1550844738954f97b6b01b8e01
+```
 
-Для получения корректных данных, сервис, принимающий в конструкторе контекст пользователя, должен быть зарегистрирован в контейнере зависимостей как [Transient](https://docs.microsoft.com/ru-ru/aspnet/core/fundamentals/dependency-injection?view=aspnetcore-3.1#transient) или [Scoped](https://docs.microsoft.com/ru-ru/aspnet/core/fundamentals/dependency-injection?view=aspnetcore-3.1#scoped).
+### Утверждения пользователя
 
-Соответственно, добавлять их в контейнер необходимо методами [AddTransient](https://docs.microsoft.com/ru-ru/dotnet/api/microsoft.extensions.dependencyinjection.servicecollectionserviceextensions.addtransient) или [AddScoped](https://docs.microsoft.com/ru-ru/dotnet/api/microsoft.extensions.dependencyinjection.servicecollectionserviceextensions.addscoped).
+Поддерживается передача утверждений пользователя. Они должны передаваться в заголовке `X-UserClaims`. Корректное содержание заголовка - `JSON`, поля которого интерпретируются как утверждения. 
+
+Пример заголовка:
+
+```
+X-User-Claims: {"Claim":"ClaimVal","roles":["Admin","SimpleUser"],"name":"John"}
+```
+
+Утверждения пользователя:
+
+```
+Claim: ClaimVal
+name: name
+http://schemas.microsoft.com/ws/2008/06/identity/claims/role: Admin
+http://schemas.microsoft.com/ws/2008/06/identity/claims/role: SuperUser
+```
+
+### Адаптация к утверждениям .NET Identity
+
+Действуют следующие правила адаптации передаваемых параметров под утверждения .NET Identoty:
+
+* идентификатор пользователя из заголовка Authorization:
+  * http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier
+  * http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name
+* утверждения из заголовка `X-UserClaims`
+  * `Roles` => http://schemas.microsoft.com/ws/2008/06/identity/claims/role
+  * `roles` => http://schemas.microsoft.com/ws/2008/06/identity/claims/role
+  * `Role` => http://schemas.microsoft.com/ws/2008/06/identity/claims/role
+  * `role` => http://schemas.microsoft.com/ws/2008/06/identity/claims/role
+  * `Roles` => http://schemas.microsoft.com/ws/2008/06/identity/claims/role
+  * `roles` => http://schemas.microsoft.com/ws/2008/06/identity/claims/role
+
+### Использование
+
+Полученные в результате аутентификации утверждения доступны в контроллере через свойство `Request.HttpContext.User.Claims`.
 
 ## Интеграция 
 
@@ -28,7 +66,7 @@ public class Startup
     public void ConfigureServices(IServiceCollection services)
     {
 		...
-        services.AddInfonotSecurity();			// <---- 1 (обязательно)
+        services.AddMyAuthAuthentication();			// <---- 1 (обязательно)
     }
 
     public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
@@ -41,13 +79,13 @@ public class Startup
 }
 ```
 
-1. Добавление сервисов безопасности;
-2. Включение аутентификации для активации механизма применения аутентификационных заголовков;
+1. Добавление сервисов аутентификации;
+2. Добавления механизма аутентификации в конвейер обработки запроса;
 3. Включение авторизации для возможности контроля успешной аутентификации.
 
 ## Авторизация
 
-Авторизация в данном случае - контроль, позволяющий удостовериться, что поступил запрос, содержащий информацию о контексте пользователя.
+Авторизация в данном случае - контроль, позволяющий удостовериться, что поступил запрос, успешно прошедший аутентификацию - был передан идентификатор пользователя.
 
 Для включения авторизации для контроллера или метода контроллера, необходимо пометить его атрибутом `Authorize`:
 
@@ -91,61 +129,4 @@ public class Startup
         ...
     }
 }
-```
-
-## Контекст пользователя
-
-```C#
-/// <summary>
-    /// Содержит данные пользовательсткого контекста запроса системы Инфонот
-    /// </summary>
-    public interface IInfonotClientContext
-    {
-        /// <summary>
-        /// Информация о текущем пользователе
-        /// </summary>
-        IInfonotPerson User { get; }
-        /// <summary>
-        /// Информация о пользователе ЛК
-        /// </summary>
-        IInfonotPerson Account { get; }
-        /// <summary>
-        /// Идентификатор нотариальной палаты
-        /// </summary>
-        string ChamberId { get; }
-        /// <summary>
-        /// Наименование нотариальной палаты
-        /// </summary>
-        string ChamberName { get; }
-        /// <summary>
-        /// Проверяет соответствие пользователя роли
-        /// </summary>
-        bool IsInRole(string expectedRole);
-    }
-```
-
-```C#
-/// <summary>
-    /// Содержит информацию о пользователе системы Инфонот
-    /// </summary>
-    public interface IInfonotPerson
-    {
-        /// <summary>
-        /// Идентификатор
-        /// </summary>
-        string Id { get; }
-        /// <summary>
-        /// Имя [, отчество]
-        /// </summary>
-        string GivenName { get; }
-        /// <summary>
-        /// Фамилия
-        /// </summary>
-        string LastName { get; }
-        /// <summary>
-        /// Должность
-        /// </summary>
-        string Title{ get; }
-    }
-
 ```
