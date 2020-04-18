@@ -1,19 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
+using System.Net.Http.Headers;
 using System.Security.Claims;
-using System.Text;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using System.Web;
 using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Microsoft.Extensions.Primitives;
 
-namespace MyAuth.HeaderAuthentication
+namespace MyAuth.Authentication
 {
     class HeaderAuthenticationHandler : AuthenticationHandler<AuthenticationSchemeOptions>
     {
@@ -28,14 +25,16 @@ namespace MyAuth.HeaderAuthentication
 
         protected override Task<AuthenticateResult> HandleAuthenticateAsync()
         {
-            var userIdHeader = Request.Headers[HeaderBasedDefinitions.UserIdHeaderName];
-            if (string.IsNullOrWhiteSpace(userIdHeader))
+            
+            var authHeader = Request.Headers["Authorization"];
+            if (!AuthenticationHeaderValue.TryParse(authHeader, out var authVal) ||
+                authVal.Scheme != HeaderBasedDefinitions.AuthenticationSchemeV1)
                 return Task.FromResult(AuthenticateResult.NoResult());
 
             var claims = new List<Claim>
             {
-                new Claim(ClaimTypes.NameIdentifier, userIdHeader),
-                new Claim(ClaimTypes.Name, userIdHeader)
+                new Claim(ClaimTypes.NameIdentifier, authVal.Parameter),
+                new Claim(ClaimTypes.Name, authVal.Parameter)
             };
 
             var claimsHeader = Request.Headers[HeaderBasedDefinitions.UserClaimsHeaderName];

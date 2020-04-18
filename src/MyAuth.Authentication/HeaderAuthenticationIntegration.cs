@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace MyAuth.HeaderAuthentication
+namespace MyAuth.Authentication
 {
     /// <summary>
     /// Contains extension methods for Identity abilities integration
@@ -11,9 +11,9 @@ namespace MyAuth.HeaderAuthentication
     {
         public static IServiceCollection AddHeaderAuthentication(this IServiceCollection services)
         {
-            services.AddAuthentication(HeaderBasedDefinitions.AuthenticationScheme)
+            services.AddAuthentication(HeaderBasedDefinitions.AuthenticationSchemeV1)
                 .AddScheme<AuthenticationSchemeOptions, HeaderAuthenticationHandler>(
-                    HeaderBasedDefinitions.AuthenticationScheme, null);
+                    HeaderBasedDefinitions.AuthenticationSchemeV1, null);
 
             return services;
         }

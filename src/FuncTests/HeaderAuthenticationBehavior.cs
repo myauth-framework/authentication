@@ -4,12 +4,13 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
 using System.Web;
 using Microsoft.AspNetCore.Mvc.Testing;
-using MyAuth.HeaderAuthentication;
+using MyAuth.Authentication;
 using Newtonsoft.Json;
 using TestServer;
 using TestServer.Models;
@@ -44,7 +45,8 @@ namespace FuncTests
         {
             //Arrange
             var client = _factory.CreateClient();
-            client.DefaultRequestHeaders.Add(HeaderBasedDefinitions.UserIdHeaderName, UserId);
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(
+                HeaderBasedDefinitions.AuthenticationSchemeV1, UserId);
             client.DefaultRequestHeaders.Add(HeaderBasedDefinitions.UserClaimsHeaderName, new JwtPayload(UserClaims).SerializeToJson());
 
             //Act
@@ -81,7 +83,8 @@ namespace FuncTests
         {
             //Arrange
             var client = _factory.CreateClient();
-            client.DefaultRequestHeaders.Add(HeaderBasedDefinitions.UserIdHeaderName, UserId);
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(
+                HeaderBasedDefinitions.AuthenticationSchemeV1, UserId);
             client.DefaultRequestHeaders.Add(HeaderBasedDefinitions.UserClaimsHeaderName, new JwtPayload(UserClaims).SerializeToJson());
 
             //Act
@@ -109,7 +112,8 @@ namespace FuncTests
         {
             //Arrange
             var client = _factory.CreateClient();
-            client.DefaultRequestHeaders.Add(HeaderBasedDefinitions.UserIdHeaderName, UserId);
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(
+                HeaderBasedDefinitions.AuthenticationSchemeV1, UserId);
             client.DefaultRequestHeaders.Add(HeaderBasedDefinitions.UserClaimsHeaderName, new JwtPayload(UserClaims).SerializeToJson());
 
             //Act
@@ -137,7 +141,8 @@ namespace FuncTests
         {
             //Arrange
             var client = _factory.CreateClient();
-            client.DefaultRequestHeaders.Add(HeaderBasedDefinitions.UserIdHeaderName, UserId);
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(
+                HeaderBasedDefinitions.AuthenticationSchemeV1, UserId);
             client.DefaultRequestHeaders.Add(HeaderBasedDefinitions.UserClaimsHeaderName, "Wrong claims");
 
             //Act

@@ -1,7 +1,7 @@
 ﻿using System.Linq;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using MyAuth.HeaderAuthentication;
+using MyAuth.Authentication;
 using TestServer.Models;
 
 namespace TestServer.Controllers
