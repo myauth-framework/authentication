@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Net.Http.Headers;
@@ -28,36 +29,18 @@ namespace MyAuth.Authentication
             
             var authHeader = Request.Headers["Authorization"];
             if (!AuthenticationHeaderValue.TryParse(authHeader, out var authVal) ||
-                authVal.Scheme != HeaderBasedDefinitions.AuthenticationSchemeV1)
+                authVal.Scheme != MyAuthAuthenticationDefinitions.AuthenticationSchemeV1)
                 return Task.FromResult(AuthenticateResult.NoResult());
 
-            var claims = new List<Claim>
-            {
-                new Claim(ClaimTypes.NameIdentifier, authVal.Parameter),
-                new Claim(ClaimTypes.Name, authVal.Parameter)
-            };
+            MyAuthClaims claims;
 
-            var claimsHeader = Request.Headers[HeaderBasedDefinitions.UserClaimsHeaderName];
-            if (!string.IsNullOrWhiteSpace(claimsHeader))
+            try
             {
-                try
-                {
-                    var claimsHeaderPayload = JwtPayload.Deserialize(claimsHeader);
-
-                    var decodedClaims = claimsHeaderPayload.Claims
-                        .Select(c => new Claim(
-                                NormalizeClaimType(c.Type), 
-                                HttpUtility.UrlDecode(c.Value), 
-                                c.ValueType))
-                        .Where(c => ClaimsBlackList.Claims.All(blc => blc != c.Type));
-                        
-                    claims.AddRange(decodedClaims);
-                }
-                catch
-                {
-                    var reason = $"Invalid {HeaderBasedDefinitions.UserClaimsHeaderName} Header";
-                    return Task.FromResult(AuthenticateResult.Fail(reason));
-                }
+                claims = MyAuthClaims.Deserialize(authVal.Parameter);
+            }
+            catch (FormatException)
+            {
+                return Task.FromResult(AuthenticateResult.Fail("Authentication data has invalid format"));
             }
 
             var identity = new ClaimsIdentity(claims, Scheme.Name);
@@ -65,18 +48,6 @@ namespace MyAuth.Authentication
             var ticket = new AuthenticationTicket(principal, Scheme.Name);
 
             return Task.FromResult(AuthenticateResult.Success(ticket));
-        }
-
-        private string NormalizeClaimType(string claimType)
-        {
-            switch (claimType.ToLower())
-            {
-                case "role":
-                case "roles":
-                    return ClaimTypes.Role;
-                default:
-                    return claimType;
-            }
         }
     }
 }

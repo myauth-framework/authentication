@@ -2,57 +2,37 @@
 
 ## Обзор
 
-Библиотека, содержащая инструменты для аутентификации по идентификатру пользователя. 
+Библиотека, содержащая инструменты для обеспечения поддержки схемы аутентификации `MyAuth` для платформ .NET Core 3.1+.
 
-Для платформ .NET Core 3.1+
-
-### Аутентификация
-
-Аутентификационные данные передаются стандартным способом - в заголовке `Authorization`. Схема аутентификации - `MyAuth1`. В качестве параметров аутентификации предаётся идентификатор пользователя в открытом виде. 
-
-Пример заголовка:
-
-```
-Authorization: MyAuth1 de184f1550844738954f97b6b01b8e01
-```
-
-### Утверждения пользователя
-
-Поддерживается передача утверждений пользователя. Они должны передаваться в заголовке `X-UserClaims`. Корректное содержание заголовка - `JSON`, поля которого интерпретируются как утверждения. 
-
-Пример заголовка:
-
-```
-X-User-Claims: {"Claim":"ClaimVal","roles":["Admin","SimpleUser"],"name":"John"}
-```
-
-Утверждения пользователя:
-
-```
-Claim: ClaimVal
-name: name
-http://schemas.microsoft.com/ws/2008/06/identity/claims/role: Admin
-http://schemas.microsoft.com/ws/2008/06/identity/claims/role: SuperUser
-```
-
-### Адаптация к утверждениям .NET Identity
-
-Действуют следующие правила адаптации передаваемых параметров под утверждения .NET Identoty:
-
-* идентификатор пользователя из заголовка Authorization:
-  * http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier
-  * http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name
-* утверждения из заголовка `X-UserClaims`
-  * `Roles` => http://schemas.microsoft.com/ws/2008/06/identity/claims/role
-  * `roles` => http://schemas.microsoft.com/ws/2008/06/identity/claims/role
-  * `Role` => http://schemas.microsoft.com/ws/2008/06/identity/claims/role
-  * `role` => http://schemas.microsoft.com/ws/2008/06/identity/claims/role
-  * `Roles` => http://schemas.microsoft.com/ws/2008/06/identity/claims/role
-  * `roles` => http://schemas.microsoft.com/ws/2008/06/identity/claims/role
-
-### Использование
+При необходимости, ознакомьтесь со спецификацией [MyAuth](https://github.com/ozzy-ext-myauth/specification) аутентификации.
 
 Полученные в результате аутентификации утверждения доступны в контроллере через свойство `Request.HttpContext.User.Claims`.
+
+При этом действуют правила адаптации передаваемых утверждений под утверждения .NET Identoty:
+
+* `sub` => http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier
+* `name` => http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name
+
+* `sub` (если не указан `name`) => http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name
+
+* `roles` (каждый элемент) => http://schemas.microsoft.com/ws/2008/06/identity/claims/role
+* `role` => http://schemas.microsoft.com/ws/2008/06/identity/claims/role
+
+Пример разбора заголовка:
+
+```
+Authorization: MyAuth1 sub="user-1232314", name="John", roles="employee,admin", my:age="50"
+```
+
+Утверждения в приложении:
+
+```
+http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier:	user-1232314
+http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name:				John
+http://schemas.microsoft.com/ws/2008/06/identity/claims/role: 			Admin
+http://schemas.microsoft.com/ws/2008/06/identity/claims/role: 			SuperUser
+my:age																	50
+```
 
 ## Интеграция 
 
