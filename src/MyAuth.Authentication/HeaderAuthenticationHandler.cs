@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Net.Http.Headers;
@@ -9,11 +10,14 @@ using System.Web;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using MyLab.LogDsl;
 
 namespace MyAuth.Authentication
 {
     class HeaderAuthenticationHandler : AuthenticationHandler<AuthenticationSchemeOptions>
     {
+        private readonly DslLogger _log;
+
         public HeaderAuthenticationHandler(
             IOptionsMonitor<AuthenticationSchemeOptions> options,
             ILoggerFactory logger,
@@ -21,43 +25,40 @@ namespace MyAuth.Authentication
             ISystemClock clock)
             : base(options, logger, encoder, clock)
         {
+            _log = logger.CreateLogger<HeaderAuthenticationHandler>().Dsl();
         }
 
         protected override Task<AuthenticateResult> HandleAuthenticateAsync()
         {
-            
             var authHeader = Request.Headers["Authorization"];
-            if (!AuthenticationHeaderValue.TryParse(authHeader, out var authVal) ||
-                authVal.Scheme != HeaderBasedDefinitions.AuthenticationSchemeV1)
+            if (!AuthenticationHeaderValue.TryParse(authHeader, out var authVal))
+            {
                 return Task.FromResult(AuthenticateResult.NoResult());
+            }
 
-            var claims = new List<Claim>
+            if (authVal.Scheme != MyAuthAuthenticationDefinitions.AuthenticationSchemeV1)
             {
-                new Claim(ClaimTypes.NameIdentifier, authVal.Parameter),
-                new Claim(ClaimTypes.Name, authVal.Parameter)
-            };
+                _log.Act("Unexpected auth scheme detected")
+                    .AndFactIs("Auth header", authHeader)
+                    .AndMarkAs("warning")
+                    .AndMarkAs("auth")
+                    .Write();
+                return Task.FromResult(AuthenticateResult.NoResult());
+            }
+            
+            MyAuthClaims claims;
 
-            var claimsHeader = Request.Headers[HeaderBasedDefinitions.UserClaimsHeaderName];
-            if (!string.IsNullOrWhiteSpace(claimsHeader))
+            try
             {
-                try
-                {
-                    var claimsHeaderPayload = JwtPayload.Deserialize(claimsHeader);
+                claims = MyAuthClaims.Deserialize(authVal.Parameter);
+            }
+            catch (FormatException e)
+            {
+                _log.Error("Authentication data has invalid format", e)
+                    .AndMarkAs("auth")
+                    .Write();
 
-                    var decodedClaims = claimsHeaderPayload.Claims
-                        .Select(c => new Claim(
-                                NormalizeClaimType(c.Type), 
-                                HttpUtility.UrlDecode(c.Value), 
-                                c.ValueType))
-                        .Where(c => ClaimsBlackList.Claims.All(blc => blc != c.Type));
-                        
-                    claims.AddRange(decodedClaims);
-                }
-                catch
-                {
-                    var reason = $"Invalid {HeaderBasedDefinitions.UserClaimsHeaderName} Header";
-                    return Task.FromResult(AuthenticateResult.Fail(reason));
-                }
+                return Task.FromResult(AuthenticateResult.Fail("Authentication data has invalid format"));
             }
 
             var identity = new ClaimsIdentity(claims, Scheme.Name);
@@ -65,18 +66,6 @@ namespace MyAuth.Authentication
             var ticket = new AuthenticationTicket(principal, Scheme.Name);
 
             return Task.FromResult(AuthenticateResult.Success(ticket));
-        }
-
-        private string NormalizeClaimType(string claimType)
-        {
-            switch (claimType.ToLower())
-            {
-                case "role":
-                case "roles":
-                    return ClaimTypes.Role;
-                default:
-                    return claimType;
-            }
         }
     }
 }
