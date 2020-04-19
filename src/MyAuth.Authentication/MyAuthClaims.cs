@@ -38,6 +38,14 @@ namespace MyAuth.Authentication
                 .Where(c => c.Type != ClaimTypes.Role)
                 .ToArray();
 
+            var wrongKeyFormatRole = notRoles.FirstOrDefault(r =>
+                r.Type != ClaimTypes.NameIdentifier &&
+                (r.Type.Contains(':') || r.Type.Contains('\\') || r.Type.Contains('/')));
+            if (wrongKeyFormatRole != null)
+            {
+                throw new FormatException("One of claims has wrong key format: " + wrongKeyFormatRole.Type);
+            }
+
             var notRolesStrings = notRoles.Select(cl =>
                 $"{(cl.Type == ClaimTypes.NameIdentifier ? "sub" : cl.Type)}=\"{NormVal(cl.Value)}\"");
             
@@ -105,7 +113,7 @@ namespace MyAuth.Authentication
         private static string PrepareKeyAfterDeserialize(string key)
         {
             var normKey = key.Trim();
-            string resKey = null;
+            string resKey;
 
             switch (normKey.ToLower())
             {
