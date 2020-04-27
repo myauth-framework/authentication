@@ -1,12 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IdentityModel.Tokens.Jwt;
-using System.Linq;
-using System.Net.Http.Headers;
+﻿using System.Net.Http.Headers;
 using System.Security.Claims;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
-using System.Web;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -14,18 +9,18 @@ using MyLab.LogDsl;
 
 namespace MyAuth.Authentication
 {
-    class HeaderAuthenticationHandler : AuthenticationHandler<AuthenticationSchemeOptions>
+    class MyAuth2AuthenticationHandler : AuthenticationHandler<AuthenticationSchemeOptions>
     {
         private readonly DslLogger _log;
 
-        public HeaderAuthenticationHandler(
+        public MyAuth2AuthenticationHandler(
             IOptionsMonitor<AuthenticationSchemeOptions> options,
             ILoggerFactory logger,
             UrlEncoder encoder,
             ISystemClock clock)
             : base(options, logger, encoder, clock)
         {
-            _log = logger.CreateLogger<HeaderAuthenticationHandler>().Dsl();
+            _log = logger.CreateLogger<MyAuth1AuthenticationHandler>().Dsl();
         }
 
         protected override Task<AuthenticateResult> HandleAuthenticateAsync()
@@ -36,31 +31,12 @@ namespace MyAuth.Authentication
                 return Task.FromResult(AuthenticateResult.NoResult());
             }
 
-            if (authVal.Scheme != MyAuthAuthenticationDefinitions.AuthenticationSchemeV1)
+            if (authVal.Scheme != MyAuthAuthenticationDefinitions.SchemeV2)
             {
-                _log.Act("Unexpected auth scheme detected")
-                    .AndFactIs("Auth header", authHeader)
-                    .AndMarkAs("warning")
-                    .AndMarkAs("auth")
-                    .Write();
                 return Task.FromResult(AuthenticateResult.NoResult());
             }
             
-            MyAuthClaims claims;
-
-            try
-            {
-                claims = MyAuthClaims.Deserialize(authVal.Parameter);
-            }
-            catch (FormatException e)
-            {
-                _log.Error("Authentication data has invalid format", e)
-                    .AndMarkAs("auth")
-                    .Write();
-
-                return Task.FromResult(AuthenticateResult.Fail("Authentication data has invalid format"));
-            }
-
+            var claims = MyAuth2Claims.LoadFomHeaders(Request.Headers);
             var identity = new ClaimsIdentity(claims, Scheme.Name);
             var principal = new ClaimsPrincipal(identity);
             var ticket = new AuthenticationTicket(principal, Scheme.Name);

@@ -6,7 +6,7 @@ using Microsoft.VisualBasic;
 
 namespace MyAuth.Authentication
 {
-    class ClaimsReader
+    class V1ClaimsReader
     {
         static readonly char[] SkitPreKeyRead = new char[]{' ', '\t', ','};
 
@@ -15,9 +15,9 @@ namespace MyAuth.Authentication
         public int CurrentPosition { get; set; }
 
         /// <summary>
-        /// Initializes a new instance of <see cref="ClaimsReader"/>
+        /// Initializes a new instance of <see cref="V1ClaimsReader"/>
         /// </summary>
-        public ClaimsReader(string str)
+        public V1ClaimsReader(string str)
         {
             _str = str.Trim();
         }

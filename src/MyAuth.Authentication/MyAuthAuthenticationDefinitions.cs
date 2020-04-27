@@ -5,6 +5,8 @@
     /// </summary>
     public class MyAuthAuthenticationDefinitions
     {
-        public const string AuthenticationSchemeV1 = "MyAuth1";
+        public const string SchemePolicy = "MyAuth-Selector";
+        public const string SchemeV1 = "MyAuth1";
+        public const string SchemeV2 = "MyAuth2";
     }
 }
