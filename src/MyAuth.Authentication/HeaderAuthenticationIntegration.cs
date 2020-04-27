@@ -22,8 +22,7 @@ namespace MyAuth.Authentication
                 {
                     options.ForwardDefaultSelector = context =>
                     {
-                        var authHeader = context.Request.Headers["Authorization"].FirstOrDefault();
-                        if (authHeader?.StartsWith(MyAuthAuthenticationDefinitions.SchemeV1 + " ") == true)
+                        if (SchemeDetector.IsSchema1(context.Request.Headers, out _))
                         {
                             return MyAuthAuthenticationDefinitions.SchemeV1;
                         }
