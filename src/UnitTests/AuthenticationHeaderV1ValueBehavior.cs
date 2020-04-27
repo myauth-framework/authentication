@@ -6,7 +6,7 @@ using Xunit;
 
 namespace UnitTests
 {
-    public class AuthenticationHeaderValueBehavior
+    public class AuthenticationHeaderV1ValueBehavior
     {
         [Theory]
         [InlineData("sub=\"user-1\", role=\"admin,user\"", true)]

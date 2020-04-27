@@ -25,12 +25,15 @@ namespace FuncTests
             _output = output;
         }
 
-        [Fact]
-        public async Task ShouldPassIdentifier()
+        [Theory]
+        [InlineData(MyAuthAuthenticationDefinitions.SchemeV1)]
+        [InlineData(MyAuthAuthenticationDefinitions.SchemeV2)]
+        public async Task ShouldPassIdentifier(string schemeVersion)
         {
             //Arrange
             var client = _factory.CreateClient()
-                .MyAuth1Authentication("123");
+                .AddMyAuthAuthentication("123",
+                    scheme: schemeVersion);
 
             //Act
             var claims = (await SenRequest(client))
@@ -40,26 +43,17 @@ namespace FuncTests
             Assert.Equal("123", claims[ClaimTypes.NameIdentifier]);
         }
 
-        async Task<ClaimModel[]> SenRequest(HttpClient client)
-        {
-            var resp = await client.GetAsync("test");
-            var respStr = await resp.Content.ReadAsStringAsync();
-
-            _output.WriteLine($"HTTP code: {(int)resp.StatusCode}({resp.StatusCode})");
-            _output.WriteLine(respStr);
-            resp.EnsureSuccessStatusCode();
-
-            return JsonConvert.DeserializeObject<ClaimModel[]>(respStr);
-        }
-
-        [Fact]
-        public async Task ShouldPassClaims()
+        [Theory]
+        [InlineData(MyAuthAuthenticationDefinitions.SchemeV1)]
+        [InlineData(MyAuthAuthenticationDefinitions.SchemeV2)]
+        public async Task ShouldPassClaims(string schemeVersion)
         {
             //Arrange
             var client = _factory.CreateClient()
-                .MyAuth1Authentication(
+                .AddMyAuthAuthentication(
                     "123",
-                    new []{ new Claim("foo-claim", "foo-val") });
+                    new []{ new Claim("foo-claim", "foo-val") },
+                    schemeVersion);
 
             //Act
             var claims = (await SenRequest(client))
@@ -69,18 +63,21 @@ namespace FuncTests
             Assert.Equal("foo-val", claims["foo-claim"]);
         }
 
-        [Fact]
-        public async Task ShouldPassRoles()
+        [Theory]
+        [InlineData(MyAuthAuthenticationDefinitions.SchemeV1)]
+        [InlineData(MyAuthAuthenticationDefinitions.SchemeV2)]
+        public async Task ShouldPassRoles(string schemeVersion)
         {
             //Arrange
             var client = _factory.CreateClient()
-                .MyAuth1Authentication(
+                .AddMyAuthAuthentication(
                     "123",
                     new[]
                     {
                         new Claim(ClaimTypes.Role, "admin"),
                         new Claim(ClaimTypes.Role, "user")
-                    });
+                    },
+                    schemeVersion);
 
             //Act
             var roles = (await SenRequest(client))
@@ -95,14 +92,17 @@ namespace FuncTests
 
 
 
-        [Fact]
-        public async Task ShouldResolveUrlEncodedHeaders()
+        [Theory]
+        [InlineData(MyAuthAuthenticationDefinitions.SchemeV1)]
+        [InlineData(MyAuthAuthenticationDefinitions.SchemeV2)]
+        public async Task ShouldResolveUrlEncodedHeaders(string schemeVersion)
         {
             //Arrange
             var client = _factory.CreateClient()
-                .MyAuth1Authentication(
+                .AddMyAuthAuthentication(
                     "123",
-                    new[] { new Claim("name", HttpUtility.UrlEncode("Растислав"))});
+                    new[] { new Claim("name", HttpUtility.UrlEncode("Растислав"))},
+                    schemeVersion);
 
             //Act
             var claims = (await SenRequest(client))
@@ -110,6 +110,18 @@ namespace FuncTests
 
             //Assert
             Assert.Equal("Растислав", claims[ClaimTypes.Name]);
+        }
+
+        async Task<ClaimModel[]> SenRequest(HttpClient client)
+        {
+            var resp = await client.GetAsync("test");
+            var respStr = await resp.Content.ReadAsStringAsync();
+
+            _output.WriteLine($"HTTP code: {(int)resp.StatusCode}({resp.StatusCode})");
+            _output.WriteLine(respStr);
+            resp.EnsureSuccessStatusCode();
+
+            return JsonConvert.DeserializeObject<ClaimModel[]>(respStr);
         }
 
     }

@@ -7,7 +7,7 @@ using Xunit;
 
 namespace UnitTests
 {
-    public class ClaimsReaderBehavior
+    public class V1ClaimsReaderBehavior
     {
         private const string TestStr = "sub=\"user-1\",roles=\"admin,user\"";
 
@@ -15,7 +15,7 @@ namespace UnitTests
         public void ShouldReadFirstKey()
         {
             //Arrange
-            var reader = new ClaimsReader(TestStr);
+            var reader = new V1ClaimsReader(TestStr);
 
             //Act
             var key1 = reader.ReadKey();
@@ -29,7 +29,7 @@ namespace UnitTests
         public void ShouldReadFirstValue()
         {
             //Arrange
-            var reader = new ClaimsReader(TestStr)
+            var reader = new V1ClaimsReader(TestStr)
             {
                 CurrentPosition = 5
             };
@@ -46,7 +46,7 @@ namespace UnitTests
         public void ShouldReadNextKey()
         {
             //Arrange
-            var reader = new ClaimsReader(TestStr)
+            var reader = new V1ClaimsReader(TestStr)
             {
                 CurrentPosition = 13
             };
@@ -63,7 +63,7 @@ namespace UnitTests
         public void ShouldReadLastValue()
         {
             //Arrange
-            var reader = new ClaimsReader(TestStr)
+            var reader = new V1ClaimsReader(TestStr)
             {
                 CurrentPosition = 20
             };

@@ -11,18 +11,18 @@ using Microsoft.AspNetCore.Mvc.Formatters;
 
 namespace MyAuth.Authentication
 {
-    class MyAuthClaims : Collection<Claim>
+    class MyAuth1Claims : Collection<Claim>
     {
         private const string ParseRegex =
             "(?<key>[\\w_\\:\\/\\-]+)=\\\"(?<val>[\\s\\w\\d\\-_\\,\\.\\\\\\/(\\\")а-яА-ЯёЁ]+)\\\"";
 
-        public MyAuthClaims(IEnumerable<Claim> initial)
+        public MyAuth1Claims(IEnumerable<Claim> initial)
             :base(new List<Claim>(initial))
         {
             
         }
 
-        public MyAuthClaims()
+        public MyAuth1Claims()
         {
             
         }
@@ -63,7 +63,7 @@ namespace MyAuth.Authentication
             
         }
 
-        public static MyAuthClaims Deserialize(string strVal)
+        public static MyAuth1Claims Deserialize(string strVal)
         {
             var res= new List<Claim>();
 
@@ -73,7 +73,7 @@ namespace MyAuth.Authentication
                 if(matches.Count == 0)
                     throw new FormatException("Claims has invalid format");
 
-                var reader = new ClaimsReader(strVal);
+                var reader = new V1ClaimsReader(strVal);
                 while (!reader.Eof())
                 {
                     var key = PrepareKeyAfterDeserialize(reader.ReadKey());
@@ -93,7 +93,7 @@ namespace MyAuth.Authentication
 
             }
 
-            return new MyAuthClaims(res);
+            return new MyAuth1Claims(res);
         }
 
         private static IEnumerable<Claim> PrepareValueAfterDeserialize(string key, string value)

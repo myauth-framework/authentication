@@ -6,7 +6,7 @@ using Xunit;
 
 namespace UnitTests
 {
-    public partial class MyAuthClaimsBehavior
+    public partial class MyAuthV1ClaimsBehavior
     {
         [Theory]
         [InlineData("sub=\"user-1\"", "user-1")]
@@ -16,7 +16,7 @@ namespace UnitTests
             //Arrange
             
             //Act
-            var claims = MyAuthClaims.Deserialize(str);
+            var claims = MyAuth1Claims.Deserialize(str);
 
             var nameClaim = claims.FirstOrDefault(c => c.Type == ClaimTypes.Name);
             var idClaim = claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier);
@@ -37,7 +37,7 @@ namespace UnitTests
 
 
             //Act
-            var claims = MyAuthClaims.Deserialize(str);
+            var claims = MyAuth1Claims.Deserialize(str);
             var roleClaim = claims.FirstOrDefault(c => c.Type == ClaimTypes.Role);
 
             //Assert
@@ -52,7 +52,7 @@ namespace UnitTests
             var str = "sub=\"user-1\", role=\"admin,user\"";
 
             //Act
-            var claims = MyAuthClaims.Deserialize(str);
+            var claims = MyAuth1Claims.Deserialize(str);
             var roles = claims
                 .Where(c => c.Type == ClaimTypes.Role)
                 .Select(c => c.Value)
@@ -70,7 +70,7 @@ namespace UnitTests
             var str = "name=\"user-1\"";
 
             //Act & Assert 
-            Assert.Throws<FormatException>(() => MyAuthClaims.Deserialize(str));
+            Assert.Throws<FormatException>(() => MyAuth1Claims.Deserialize(str));
         }
 
         [Fact]
@@ -80,7 +80,7 @@ namespace UnitTests
             var str = "sub=\"user-1\",key://some_key-123/=\"val_ \\\" .,'nj\"";
             
             //Act
-            var claims = MyAuthClaims.Deserialize(str);
+            var claims = MyAuth1Claims.Deserialize(str);
             var warningClaim = claims.FirstOrDefault(c => c.Type == "key://some_key-123/");
 
             //Assert

@@ -7,14 +7,14 @@ using Xunit.Abstractions;
 
 namespace UnitTests
 {
-    public partial class MyAuthClaimsBehavior
+    public partial class MyAuthV1ClaimsBehavior
     {
         private readonly ITestOutputHelper _output;
 
         /// <summary>
-        /// Initializes a new instance of <see cref="MyAuthClaimsBehavior"/>
+        /// Initializes a new instance of <see cref="MyAuthV1ClaimsBehavior"/>
         /// </summary>
-        public MyAuthClaimsBehavior(ITestOutputHelper output)
+        public MyAuthV1ClaimsBehavior(ITestOutputHelper output)
         {
             _output = output;
         }
@@ -23,7 +23,7 @@ namespace UnitTests
         public void ShouldSerializeSub()
         {
             //Arrange
-            var claims = new MyAuthClaims(new []
+            var claims = new MyAuth1Claims(new []
             {
                 new Claim(ClaimTypes.NameIdentifier, "user-1"), 
             });
@@ -39,7 +39,7 @@ namespace UnitTests
         public void ShouldSerializeSingleRole()
         {
             //Arrange
-            var claims = new MyAuthClaims(new[]
+            var claims = new MyAuth1Claims(new[]
             {
                 new Claim(ClaimTypes.NameIdentifier, "user-1"),
                 new Claim(ClaimTypes.Role, "admin"),
@@ -56,7 +56,7 @@ namespace UnitTests
         public void ShouldSerializeMultipleRole()
         {
             //Arrange
-            var claims = new MyAuthClaims(new[]
+            var claims = new MyAuth1Claims(new[]
             {
                 new Claim(ClaimTypes.NameIdentifier, "user-1"),
                 new Claim(ClaimTypes.Role, "admin"),
@@ -74,7 +74,7 @@ namespace UnitTests
         public void ShouldSerializeValueWithWarningChars()
         {
             //Arrange
-            var claims = new MyAuthClaims(new[]
+            var claims = new MyAuth1Claims(new[]
             {
                 new Claim(ClaimTypes.NameIdentifier, "user-1"),
                 new Claim("foo", "val_ \\\" .,'nj")
@@ -94,7 +94,7 @@ namespace UnitTests
         public void ShouldFailSerializationWhenClaimKeyHasWrongFormat(string key)
         {
             //Arrange
-            var claims = new MyAuthClaims(new[]
+            var claims = new MyAuth1Claims(new[]
             {
                 new Claim(ClaimTypes.NameIdentifier, "user-1"),
                 new Claim(key, "bbb")
