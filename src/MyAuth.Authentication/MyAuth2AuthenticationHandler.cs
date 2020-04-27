@@ -1,5 +1,4 @@
-﻿using System.Net.Http.Headers;
-using System.Security.Claims;
+﻿using System.Security.Claims;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
@@ -25,17 +24,9 @@ namespace MyAuth.Authentication
 
         protected override Task<AuthenticateResult> HandleAuthenticateAsync()
         {
-            var authHeader = Request.Headers["Authorization"];
-            if (!AuthenticationHeaderValue.TryParse(authHeader, out var authVal))
-            {
+            if(!SchemeDetector.IsSchema2(Request.Headers))
                 return Task.FromResult(AuthenticateResult.NoResult());
-            }
 
-            if (authVal.Scheme != MyAuthAuthenticationDefinitions.SchemeV2)
-            {
-                return Task.FromResult(AuthenticateResult.NoResult());
-            }
-            
             var claims = MyAuth2Claims.LoadFomHeaders(Request.Headers);
             var identity = new ClaimsIdentity(claims, Scheme.Name);
             var principal = new ClaimsPrincipal(identity);

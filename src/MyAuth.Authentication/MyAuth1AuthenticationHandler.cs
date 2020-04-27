@@ -30,17 +30,9 @@ namespace MyAuth.Authentication
 
         protected override Task<AuthenticateResult> HandleAuthenticateAsync()
         {
-            var authHeader = Request.Headers["Authorization"];
-            if (!AuthenticationHeaderValue.TryParse(authHeader, out var authVal))
-            {
+            if(!SchemeDetector.IsSchema1(Request.Headers, out var authVal))
                 return Task.FromResult(AuthenticateResult.NoResult());
-            }
 
-            if (authVal.Scheme != MyAuthAuthenticationDefinitions.SchemeV1)
-            {
-                return Task.FromResult(AuthenticateResult.NoResult());
-            }
-            
             MyAuth1Claims claims;
 
             try
