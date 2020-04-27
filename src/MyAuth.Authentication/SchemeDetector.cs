@@ -23,7 +23,7 @@ namespace MyAuth.Authentication
             }
             else
             {
-                var userIdHeader = headerDictionary["X-Claim-User-Id"];
+                var userIdHeader = headerDictionary[MyAuth2HeaderNames.UserId];
 
                 if (string.IsNullOrEmpty(userIdHeader))
                     return false;

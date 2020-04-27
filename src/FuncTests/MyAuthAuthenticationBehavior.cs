@@ -151,7 +151,7 @@ namespace FuncTests
         {
             //Arrange
             var client = _factory.CreateClient();
-            client.DefaultRequestHeaders.Add("X-Claim-User-Id", "123");
+            client.DefaultRequestHeaders.Add(MyAuth2HeaderNames.UserId, "123");
 
             //Act
             var resp = await client.GetAsync("test/authorized");
