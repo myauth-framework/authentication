@@ -112,3 +112,27 @@ public class Startup
     }
 }
 ```
+
+## Обязательные утверждения
+
+Иногда для правильной работы метода контроллера необходимо наличие определённых утверждений аутентификации. Отсутствие таковых может расцениваться, как неполноценная аутентификация или, по факту, непройденная аутентификация ([spec](https://github.com/ozzy-ext-myauth/specification/blob/master/v2/myauth-authentication-2.md#%D0%BF%D1%80%D0%B8%D0%BC%D0%B5%D0%BD%D0%B5%D0%BD%D0%B8%D0%B5)). 
+
+Для контроля наличия требуемых утверждений и получения их в методе контроллера, используйте атрибуты привязки `RequiredClaimHeaderAttribute` или их наследников.
+
+В случае отсутствия хотя бы одного из указанных заголовков, клиент получит ответ `401 (Unauthorized)`.
+
+В примере ниже, требуется наличие в запросе заголовков `X-Claim-User-Id` и `X-Claim-Account-Id`, значение которых будет присвоено соответствующим входным параметрам метода:
+
+```C#
+[HttpGet("req-headers")]
+public IActionResult GetWithRequiredHeaders(
+    [RequiredClaimHeader("X-Claim-User-Id")] string userId,
+    [RequiredClaimHeader("X-Claim-Account-Id")] string accountId)
+    {
+	    return Ok(userId + "-" + accountId);
+    }
+```
+
+> При разработке системного решения, рекомендуется вводить наследников с заранее определёнными именами заголовков. 
+>
+> Т.е. пример демонстрационный, а RequiredClaimHeaderAttribute - это инструмент для реализации наследников под конкретные задачи.Ы

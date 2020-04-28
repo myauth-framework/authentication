@@ -33,7 +33,7 @@ namespace MyAuth.Authentication
                 .AddScheme<AuthenticationSchemeOptions, MyAuth1AuthenticationHandler>(
                     MyAuthAuthenticationDefinitions.SchemeV1, null)
                 .AddScheme<AuthenticationSchemeOptions, MyAuth2AuthenticationHandler>(
-                    MyAuthAuthenticationDefinitions.SchemeV2, null); ;
+                    MyAuthAuthenticationDefinitions.SchemeV2, null);
 
             return services;
         }

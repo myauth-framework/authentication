@@ -5,6 +5,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="MyLab.ApiClient" Version="3.4.3" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\MyAuth.Authentication\MyAuth.Authentication.csproj" />
   </ItemGroup>
 
