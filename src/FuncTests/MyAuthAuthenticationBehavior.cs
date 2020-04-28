@@ -113,53 +113,6 @@ namespace FuncTests
             Assert.Equal("Растислав", claims[ClaimTypes.Name]);
         }
 
-        [Fact]
-        public async Task ShouldNotAuthorizeWithoutAuthCredentials()
-        {
-            //Arrange
-            var client = _factory.CreateClient();
-
-
-            //Act
-            var resp = await client.GetAsync("test/authorized");
-            
-            //Assert
-            Assert.Equal(HttpStatusCode.Unauthorized, resp.StatusCode);
-        }
-
-        [Theory]
-        [InlineData(MyAuthAuthenticationDefinitions.SchemeV1)]
-        [InlineData(MyAuthAuthenticationDefinitions.SchemeV2)]
-        public async Task ShouldAuthenticate(string schemeVersion)
-        {
-            //Arrange
-            var client = _factory.CreateClient()
-                .AddMyAuthAuthentication(
-                    "123",
-                    null,
-                    schemeVersion);
-
-            //Act
-            var resp = await client.GetAsync("test/authorized");
-
-            //Assert
-            Assert.Equal(HttpStatusCode.OK, resp.StatusCode);
-        }
-
-        [Fact]
-        public async Task ShouldAuthenticateIfV2AuthorizationHeaderNotSpecified()
-        {
-            //Arrange
-            var client = _factory.CreateClient();
-            client.DefaultRequestHeaders.Add("X-Claim-User-Id", "123");
-
-            //Act
-            var resp = await client.GetAsync("test/authorized");
-
-            //Assert
-            Assert.Equal(HttpStatusCode.OK, resp.StatusCode);
-        }
-
         async Task<ClaimModel[]> SenRequest(HttpClient client)
         {
             var resp = await client.GetAsync("test");

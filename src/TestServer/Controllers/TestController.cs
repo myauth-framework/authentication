@@ -1,7 +1,11 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
+using System.Security.Claims;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MyAuth.Authentication;
+using MyLab.ApiClient;
 using TestServer.Models;
 
 namespace TestServer.Controllers
@@ -14,6 +18,20 @@ namespace TestServer.Controllers
         public IActionResult Get()
         {
             return Ok(Request.HttpContext.User.Claims.Select(c => new ClaimModel(c)).ToArray());
+        }
+
+        [HttpGet("req-headers")]
+        public IActionResult GetWithRequiredHeaders(
+            [RequiredClaimHeader("X-Claim-User-Id")] string userId,
+            [RequiredClaimHeader("X-Claim-Account-Id")] string accountId)
+        {
+            return Ok();
+        }
+
+        [HttpGet("req-headers-indicator")]
+        public IActionResult GetWithHeadersIndicator(RequiredClaimsObject claims)
+        {
+            return Ok();
         }
 
         [HttpGet("authorized")]

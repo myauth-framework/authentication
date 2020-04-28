@@ -31,9 +31,9 @@ namespace MyAuth.Authentication
 
             foreach (var pair in headerDictionary.Where(h => h.Key.StartsWith("X-Claim-")))
             {
-                string headerKey = pair.Key.Substring(8).ToLower();
+                string headerKey = pair.Key;
 
-                if (headerKey == "roles")
+                if (headerKey == MyAuth2HeaderNames.Roles)
                 {
                     var roleClaims = pair.Value.ToString()
                         .Split(',', StringSplitOptions.RemoveEmptyEntries)
@@ -46,17 +46,17 @@ namespace MyAuth.Authentication
                     string claimType;
                     switch (headerKey)
                     {
-                        case "user-id":
+                        case MyAuth2HeaderNames.UserId:
                             claimType = ClaimTypes.NameIdentifier;
                             break;
-                        case "role":
+                        case MyAuth2HeaderNames.Role:
                             claimType = ClaimTypes.Role;
                             break;
-                        case "name":
+                        case MyAuth2HeaderNames.UserName:
                             claimType = ClaimTypes.Name;
                             break;
                         default:
-                            claimType = headerKey;
+                            claimType = headerKey.Substring(8).ToLower();
                             break;
                     }
 
@@ -86,22 +86,22 @@ namespace MyAuth.Authentication
 
                 switch (claim.Type)
                 {
-                    case ClaimTypes.NameIdentifier: claimKey = "User-Id"; break;
-                    case ClaimTypes.Name: claimKey = "Name"; break;
+                    case ClaimTypes.NameIdentifier: claimKey = MyAuth2HeaderNames.UserId; break;
+                    case ClaimTypes.Name: claimKey = MyAuth2HeaderNames.UserName; break;
                     default:
                     {
                         var words = claim.Type
                             .Split(ClaimTypeSeparators, StringSplitOptions.RemoveEmptyEntries)
                             .Select(w => w.Remove(1).ToUpper() + w.Substring(1));
-                        claimKey = string.Join('-', words);
+                        claimKey = "X-Claim-" + string.Join('-', words);
                     }
                     break;
                 }
 
-                yield return new KeyValuePair<string, string>("X-Claim-" + claimKey, claim.Value);
+                yield return new KeyValuePair<string, string>(claimKey, claim.Value);
             }
 
-            yield return new KeyValuePair<string, string>("X-Claim-Roles", string.Join(',', roles));
+            yield return new KeyValuePair<string, string>(MyAuth2HeaderNames.Roles, string.Join(',', roles));
         }
     }
 }
