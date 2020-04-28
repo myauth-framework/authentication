@@ -25,7 +25,13 @@ namespace TestServer.Controllers
             [RequiredClaimHeader("X-Claim-User-Id")] string userId,
             [RequiredClaimHeader("X-Claim-Account-Id")] string accountId)
         {
-            return Ok(userId + "-" + accountId);
+            return Ok();
+        }
+
+        [HttpGet("req-headers-indicator")]
+        public IActionResult GetWithHeadersIndicator(RequiredClaimsObject claims)
+        {
+            return Ok();
         }
 
         [HttpGet("authorized")]

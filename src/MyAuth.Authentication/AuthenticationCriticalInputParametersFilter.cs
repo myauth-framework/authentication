@@ -14,6 +14,18 @@ namespace MyAuth.Authentication
     {
         public Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
         {
+            if (context.ActionArguments != null)
+            {
+                foreach (var indicator in context.ActionArguments.Values.OfType<IRequiredClaimsIndicator>())
+                {
+                    if (!indicator.RequiredClaimHeadersHasSpecified())
+                    {
+                        context.Result = new UnauthorizedResult();
+                        return Task.CompletedTask;
+                    }
+                }
+            }
+
             if (context.ActionDescriptor is ControllerActionDescriptor controllerActionDescriptor)
             {
                 var methodParameters = controllerActionDescriptor.MethodInfo.GetParameters();
@@ -30,7 +42,7 @@ namespace MyAuth.Authentication
                         return Task.CompletedTask;
                     }
                 }
-            } 
+            }
 
             return next();
         }

@@ -18,10 +18,24 @@ namespace FuncTests
         [InlineData(null, "bar", HttpStatusCode.Unauthorized)]
         [InlineData("foo", null, HttpStatusCode.Unauthorized)]
         [InlineData(null, null, HttpStatusCode.Unauthorized)]
-        public async Task ShouldControlRequiredHeaders(string userId, string accountId, HttpStatusCode expectedStatus)
+        public async Task ShouldControlRequiredHeadersWithAttributes(string userId, string accountId, HttpStatusCode expectedStatus)
         {
             //Act
             var res = await TestCall(s => s.GetWithRequiredHeaders(userId, accountId));
+
+            //Assert
+            Assert.Equal(expectedStatus, res.StatusCode);
+        }
+
+        [Theory]
+        [InlineData("foo", "bar", HttpStatusCode.OK)]
+        [InlineData(null, "bar", HttpStatusCode.Unauthorized)]
+        [InlineData("foo", null, HttpStatusCode.Unauthorized)]
+        [InlineData(null, null, HttpStatusCode.Unauthorized)]
+        public async Task ShouldControlRequiredHeadersWithIndicatorParameter(string userId, string accountId, HttpStatusCode expectedStatus)
+        {
+            //Act
+            var res = await TestCall(s => s.GetWithHeadersIndicator(userId, accountId));
 
             //Assert
             Assert.Equal(expectedStatus, res.StatusCode);

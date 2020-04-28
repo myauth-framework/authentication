@@ -18,6 +18,11 @@ namespace TestServer
             [Header("X-Claim-User-Id")] string userId,
             [Header("X-Claim-Account-Id")] string accountId);
 
+        [Get("req-headers-indicator")]
+        Task<string> GetWithHeadersIndicator(
+            [Header("X-Claim-User-Id")] string userId,
+            [Header("X-Claim-Account-Id")] string accountId);
+
         [Get("authorized")]
         Task GetAuthorized();
 
