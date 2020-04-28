@@ -5,6 +5,7 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -36,6 +37,13 @@ namespace MyAuth.Authentication
                     MyAuthAuthenticationDefinitions.SchemeV2, null);
 
             return services;
+        }
+
+        public static void AddRequiredClaimsChecker(this MvcOptions options)
+        {
+            if (options == null) throw new ArgumentNullException(nameof(options));
+
+            options.Filters.Add<AuthenticationCriticalInputParametersFilter>();
         }
 
         public static HttpClient AddMyAuthAuthentication(this HttpClient client, string userId, IEnumerable<Claim> claims = null, string scheme = MyAuthAuthenticationDefinitions.SchemeV2)
