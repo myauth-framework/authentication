@@ -21,7 +21,7 @@ namespace TestServer
         {
             services.AddControllers(options =>
             {
-                options.Filters.Add<AuthenticationCriticalInputParametersFilter>();
+                options.AddRequiredClaimsChecker(); //<-- Optional
             });
             services.AddMyAuthAuthentication(); //<-- Important!
         }
