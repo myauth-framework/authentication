@@ -9,9 +9,9 @@
     <RepositoryUrl>https://github.com/ozzy-ext-myauth/authentication.git</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <Description>Supports MyAuth authentication. ASP.NET Core 3.1+</Description>
-    <AssemblyVersion>1.4.4.2704</AssemblyVersion>
-    <FileVersion>1.4.4.2704</FileVersion>
-    <Version>1.4.4</Version>
+    <AssemblyVersion>1.5.4.2904</AssemblyVersion>
+    <FileVersion>1.5.4.2904</FileVersion>
+    <Version>1.5.4</Version>
   </PropertyGroup>
 
   <ItemGroup>
