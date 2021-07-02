@@ -10,13 +10,13 @@ using System.Web;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using MyLab.LogDsl;
+using MyLab.Log.Dsl;
 
 namespace MyAuth.Authentication
 {
     class MyAuth1AuthenticationHandler : AuthenticationHandler<AuthenticationSchemeOptions>
     {
-        private readonly DslLogger _log;
+        private readonly IDslLogger _log;
 
         public MyAuth1AuthenticationHandler(
             IOptionsMonitor<AuthenticationSchemeOptions> options,
@@ -42,7 +42,7 @@ namespace MyAuth.Authentication
             catch (FormatException e)
             {
                 _log.Error("Authentication data has invalid format", e)
-                    .AndMarkAs("auth")
+                    .AndLabel("auth")
                     .Write();
 
                 return Task.FromResult(AuthenticateResult.Fail("Authentication data has invalid format"));
