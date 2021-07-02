@@ -4,13 +4,13 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using MyLab.LogDsl;
+using MyLab.Log.Dsl;
 
 namespace MyAuth.Authentication
 {
     class MyAuth2AuthenticationHandler : AuthenticationHandler<AuthenticationSchemeOptions>
     {
-        private readonly DslLogger _log;
+        private readonly IDslLogger _log;
 
         public MyAuth2AuthenticationHandler(
             IOptionsMonitor<AuthenticationSchemeOptions> options,
