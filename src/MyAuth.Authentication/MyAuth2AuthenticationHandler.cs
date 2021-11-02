@@ -10,16 +10,13 @@ namespace MyAuth.Authentication
 {
     class MyAuth2AuthenticationHandler : AuthenticationHandler<AuthenticationSchemeOptions>
     {
-        private readonly IDslLogger _log;
-
         public MyAuth2AuthenticationHandler(
             IOptionsMonitor<AuthenticationSchemeOptions> options,
-            ILoggerFactory logger,
+            ILoggerFactory coreLoggerFactory,
             UrlEncoder encoder,
             ISystemClock clock)
-            : base(options, logger, encoder, clock)
+            : base(options, coreLoggerFactory, encoder, clock)
         {
-            _log = logger.CreateLogger<MyAuth1AuthenticationHandler>().Dsl();
         }
 
         protected override Task<AuthenticateResult> HandleAuthenticateAsync()

@@ -20,12 +20,13 @@ namespace MyAuth.Authentication
 
         public MyAuth1AuthenticationHandler(
             IOptionsMonitor<AuthenticationSchemeOptions> options,
-            ILoggerFactory logger,
+            ILoggerFactory coreLoggerFactory,
             UrlEncoder encoder,
-            ISystemClock clock)
-            : base(options, logger, encoder, clock)
+            ISystemClock clock,
+            IDslLogger<MyAuth1AuthenticationHandler> logger = null)
+            : base(options, coreLoggerFactory, encoder, clock)
         {
-            _log = logger.CreateLogger<MyAuth1AuthenticationHandler>().Dsl();
+            _log = logger;
         }
 
         protected override Task<AuthenticateResult> HandleAuthenticateAsync()
@@ -41,7 +42,7 @@ namespace MyAuth.Authentication
             }
             catch (FormatException e)
             {
-                _log.Error("Authentication data has invalid format", e)
+                _log?.Error("Authentication data has invalid format", e)
                     .AndLabel("auth")
                     .Write();
 
